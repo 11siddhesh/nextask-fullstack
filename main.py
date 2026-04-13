@@ -20,3 +20,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from sqlalchemy import text
+from src.utils.db import SessionLocal
+
+@app.get("/wipe-db")
+def wipe_db():
+    db = SessionLocal()
+    try:
+        # This clears all users from the table immediately
+        db.execute(text("TRUNCATE TABLE user_table CASCADE"))
+        db.commit()
+        return {"status": "success", "message": "Database wiped. You can now register again."}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+    finally:
+        db.close()
