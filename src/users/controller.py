@@ -135,21 +135,28 @@ def is_authenticated(request: Request, db: Session):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token.")
     
 def send_otp_email(receiver_email: str, otp: str):
-    # --- UPDATE THESE TWO LINES ---
-    sender_email = settings.EMAIL_SENDER
-    sender_password = settings.EMAIL_PASSWORD
-
-    msg = MIMEText(f"Your Task Manager verification code is: {otp}")
-    msg['Subject'] = 'Verify your Account'
-    msg['From'] = sender_email
-    msg['To'] = receiver_email
-
+    # Paste your Google Script Web App URL here
+    GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz33s8iUC73dZoXpRnRH33ar-jucTnW_DpBRRHeUlY8Kl9jFsroKOGS4LHZHHHcsHaH/exec"
+    
+    payload = {
+        "to": receiver_email,
+        "subject": "Verify your NexTask Account",
+        "html": f"""
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+            <h2>Welcome to NexTask!</h2>
+            <p>Your 6-digit verification code is:</p>
+            <h1 style="color: #00F2FF; letter-spacing: 5px;">{otp}</h1>
+            <p>This code will expire in 10 minutes.</p>
+        </div>
+        """
+    }
+    
     try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-            server.login(sender_email, sender_password)
-            server.send_message(msg)
+        response = requests.post(GOOGLE_SCRIPT_URL, json=payload)
+        response.raise_for_status()
+        print("Email successfully sent via Google Apps Script!")
     except Exception as e:
-        print(f"Failed to send email: {e}")
+        print(f"Failed to send email via Google Script: {e}")
 
 def resend_verification_otp(body: dtos.ForgotPasswordSchema, db: Session, background_tasks: BackgroundTasks):
     user = db.query(UserModel).filter(UserModel.email == body.email).first()
