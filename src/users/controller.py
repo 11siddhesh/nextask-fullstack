@@ -12,6 +12,7 @@ from email.mime.text import MIMEText
 import random
 import string
 from src.utils.settings import settings
+import requests
 
 password_hash = PasswordHash.recommended()
 
