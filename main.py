@@ -20,3 +20,33 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from sqlalchemy import text
+from src.utils.db import SessionLocal
+
+@app.get("/force-delete-users")
+def force_delete():
+    db = SessionLocal()
+    try:
+        # LIST THE EMAILS YOU WANT TO DELETE HERE
+        emails_to_delete = ["11siddhesh10@gmail.com", "11siddhesh.exp@gmail.com"] 
+        
+        total_deleted = 0
+        for email in emails_to_delete:
+            # Check both possible table names
+            query1 = text("DELETE FROM user_table WHERE email = :email")
+            query2 = text("DELETE FROM users WHERE email = :email")
+            
+            res1 = db.execute(query1, {"email": email})
+            res2 = db.execute(query2, {"email": email})
+            total_deleted += (res1.rowcount + res2.rowcount)
+        
+        db.commit()
+        return {
+            "status": "success", 
+            "total_rows_deleted": total_deleted,
+            "emails_processed": emails_to_delete
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+    finally:
+        db.close()
