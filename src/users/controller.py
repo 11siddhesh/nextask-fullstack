@@ -11,8 +11,9 @@ import smtplib
 from email.mime.text import MIMEText
 import random
 import string
-from src.utils.settings import settings
 import requests
+from src.utils.settings import settings
+
 
 password_hash = PasswordHash.recommended()
 
